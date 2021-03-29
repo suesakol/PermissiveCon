@@ -338,6 +338,32 @@ mod <- brm(V1 ~ V2_type_re + V2_permittee_control_re + V2_valency + V2_length_c 
 
 
 summary(mod)$fixed
+  
+
+dat_est <- dat %>% 
+  filter(across(.cols = everything(),
+                .fns  = ~!is.na(.)
+                )
+         )
+
+
+# Extract expected values of the posterior predictive distribution
+
+pred <- fitted(mod, scale = "response") %>% 
+  as_tibble()
+
+
+# Combine the two data sets
+
+dat_est <- bind_cols(dat_est, pred)
+
+
+write_csv(dat_est, file = "dat_estimate.csv")
+
+
+
+
+
 
 
 
@@ -388,7 +414,28 @@ dat_est <- dat_est %>%
   mutate(Est_sum = sum(c_across(cols = starts_with("Est")), na.rm = TRUE),
          Est_prob = brms::inv_logit_scaled(Est_sum)
          ) %>% 
-  mutate(Est_prob = round(Est_prob, digits = 3))
+  mutate(Est_prob = round(Est_prob, digits = 3)
+         )
 
 
 
+
+a <- posterior_samples(mod) %>% 
+  select(starts_with("r_Text")) %>% 
+  pivot_longer(cols = everything(), names_to = "Par", values_to = "Est")
+
+a %>% 
+  group_by(Par) %>% 
+  summarize(M = mean(Est)) #%>% 
+  summarize(me = mean(M))
+
+
+as_tibble(ranef(mod)[[1]][,,], rownames = "Files")
+
+
+
+
+
+
+dat %>% count(Text_id
+              )
