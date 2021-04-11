@@ -1,3 +1,10 @@
+##########################################################################
+## Analysis script: Permissive construction (working title)             
+## April 11, 2021
+##
+##########################################################################
+
+
 
 
 
@@ -8,6 +15,8 @@
 
 library(tidyverse)
 library(brms)
+library(bayestestR)
+
 
 
 set.seed(4791)
@@ -16,7 +25,10 @@ set.seed(4791)
 
 
 
-# Preamble ----------------------------------------------------------------
+
+
+
+# Custom functions --------------------------------------------------------
 
 # intraclass correlation
 
@@ -41,13 +53,16 @@ permis <- read_csv(file = "./Data/dat.csv")
 # Permis <- read_csv(file = "dat.csv")
 
 
+
 # 1.2 Drop columns not needed for current analysis
 
 dat <- permis %>% 
-  select(!starts_with("Match") & !starts_with("Tagged"))
+  select(!c(starts_with("Match"), starts_with("Tagged"))
+         )
 
 
-# 1.3 Check various counts
+
+# 1.3 Check NAs
 
 dat %>% 
   filter(across(.cols = everything(), 
@@ -56,84 +71,107 @@ dat %>%
          )
 
 
-dat %>% 
-  count(V1)
+# The two columns: BNC_domain and Com_chanel contain all of the 62 NAs 
+# All other columns do not contain any NAs
 
 dat %>% 
-  count(V2_type)
+  filter(is.na(Com_channel) | is.na(BNC_domain)) %>% 
+  summarize(n = n())
 
-dat %>% 
-  count(V2_permittee_control)
+
+
+# 1.4 Extract verbs from the column V2 and store them in V2_re with word()
+# By default, word() splits 1st element with a white space word(X, sep = fixed(" "))
+# Then, count a string length with str_length()
+
+dat <- dat %>% 
+  mutate(V2_re        = word(V2),
+         V2_re_length = str_length(V2_re)
+         ) %>% 
+  relocate(c(V2_re, V2_length, V2_re_length), .after = V2)
+  
+
 
 
 
 # 2 Calculate association statistics
 
-# 2.1 Export a data frame with V1 and V2 columns for collostructional analysis
+# 2.1 Export a data frame with V1 and V2_re columns for collostructional analysis
 
 write_delim(dat %>% 
-              select(V1, V2) %>% 
+              select(V1, V2_re) %>% 
               as.data.frame(), 
             file = "./Data/Verb_list.txt",
             delim = "\t"
             )
 
 
-# 2.2 Read into R the results of collostructional analysis
+
+# 2.2 Read back in results of collostructional analysis (conducted with Gries' R script)
 
 dca <- read_csv("./Data/DCA_results.csv")
 
 
 
-# 2.3 Join the two tibbles together
+# 2.3 Calculate Attraction and Reliance
 
-Permis <- left_join(Permis, 
-                    dca %>% 
-                      select(-starts_with("Raw"), -starts_with("Exp")) %>% 
-                      rename(Delta_p_word_given_con = Delta_p_word_given_constr1,
-                             Delta_p_con_given_word = Delta_p_constr1_given_word,
-                             V2_preference          = Preference) %>% 
-                      mutate(across(where(is.numeric), abs)),
-                    by = c("V2" = "Words")
-                    )
+# 2.3.1 We will calculate these two scores separately for let & permit
+
+dca_let <- dca %>% 
+  filter(Prefer == "let" | Prefer == "no_preference")
 
 
-
-
-#Obtain frequency counts
-
-# NOTE
-# (1) Pivot a count table into a wide format with columns of counts for "permit" and "let"
-# (2) Convert NA into 0 with replace_na() inside across(); we use . inside replace_na() to
-# reference current columns; thus, ~replace_na(., 0)
-
-FreqTab <- Permis %>% 
-  group_by(V2) %>% 
-  count(V1) %>% 
-  pivot_wider(names_from = V1, values_from = n) %>% 
-  mutate(across(where(is.numeric), ~replace_na(., 0)
-                )
-         )
-
-a <- FreqTab %>% 
-  mutate(permit_y = permit > let,
-         prefer   = if_else(permit_y == TRUE, "permit", "let")
+dca_let <- dca_let %>% 
+  mutate(Attract = RawF_let/818,
+         Relianc = RawF_let/(RawF_let + RawF_permit)
+         ) %>% 
+  rowwise() %>% 
+  mutate(Minimum = min(Attract, Relianc)
+         ) %>% 
+  ungroup() %>% 
+  mutate(across(.cols = c(Attract,Relianc, Minimum), .fns = ~round(., digits = 3))
          )
 
 
-
-TotPermit <- sum(FreqTab$permit)
-
-FreqTab %>% 
-  mutate(a = permit, 
-         b = let,
-         c = TotPermit - a) %>% 
-  mutate(Attraction = a/(a+c),
-         Reliance = a/(a+b)) %>% 
-  select(V2, Attraction, Reliance)
+dca_permit <- dca %>% 
+  filter(Prefer == "permit") 
 
 
+dca_permit <- dca_permit %>% 
+  mutate(Attract = RawF_permit/818,
+         Relianc = RawF_permit/(RawF_permit + RawF_let)
+         ) %>% 
+  rowwise() %>% 
+  mutate(Minimum = min(Attract, Relianc)
+         ) %>% 
+  ungroup() %>% 
+  mutate(across(.cols = c(Attract,Relianc, Minimum), .fns = ~round(., digits = 3))
+         )
 
+
+dca <- bind_rows(dca_permit, dca_let)
+
+rm(dca_let, dca_permit)
+
+
+
+# 2.4 Take absolute values of Delta P
+# We now have scores indicating how words are attracted to their preferred construction
+
+dca <- dca %>% 
+  mutate(across(.cols = starts_with("Dp_"), abs)
+         )
+
+
+
+# 2.5 Join the two tibbles together
+
+dat <- left_join(dat, 
+                 dca %>% select(-starts_with(c("Raw", "ExpF", "Prefer"))),
+                 by = c("V2_re" = "Words")
+                 )
+
+rm(dca)
 
 
 
@@ -141,9 +179,10 @@ FreqTab %>%
 
 # 3 Prepare the data frame for regression
 
-# 3.1 Crate a new column for file names "Text_rnd" and for verbs "V2_rnd"
-# Following Levshina, we converted files with fewer than 5 occurrences to "OTH" (other)
-# We also recoded verbs with fewer than 5 occurrences to "other"
+# 3.1 Create a new column "Text_rnd" (for varying intercepts)
+
+# 3.1.1 We began by re-coding files keeping those with frequencies of 5 or greater
+# while converting files with frequencies < 5 as "OTH" (similar to what Levshina did)
 
 dat <- dat %>% 
   group_by(Text_id) %>% 
@@ -152,109 +191,89 @@ dat <- dat %>%
   mutate(Text_rnd = if_else(n_file < 5, "OTH", Text_id)
          ) %>% 
   ungroup() %>% 
-  relocate(Text_rnd, .after = Text_id) %>% 
-  group_by(V2) %>% 
+  select(!n_file)
+
+
+# 3.1.2 We re-coded "OTH" because there were more than 1000 rows with this factor level
+# Info for each text_id is available from "textidentifier.csv"
+# We created categories based on: http://www.natcorp.ox.ac.uk/docs/URG/bibliog.html
+
+iden <- read_csv(file = "./Data/textidentifier.csv") 
+
+
+# we split data frame into two smaller ones and recode "dat_oth"
+
+dat_com <- dat %>% 
+  filter(Text_rnd != "OTH")
+
+dat_oth <- dat %>% 
+  filter(Text_rnd == "OTH")
+
+
+dat_oth <- left_join(dat_oth, iden, by = "Text_id") %>% 
+  mutate(Text_rnd = case_when(Text_types == "academic journal" ~ "ACJ",
+                              Text_types == "book"             ~ "BOK", 
+                              Text_types == "essays"           ~ "ESY",
+                              Text_types == "interview"        ~ "INT",
+                              Text_types == "leaflet"          ~ "LFT",
+                              Text_types == "lecture/ training"~ "LCT",
+                              Text_types == "magazine"         ~ "MAG",
+                              Text_types == "medical consultation"        ~ "MED",
+                              Text_types == "meeting"         ~ "MET",
+                              Text_types == "newspaper"       ~ "NEW",
+                              Text_types == "presentation/ public speech" ~ "PRE",
+                              Text_types == "seminar/ conference"         ~ "SEM",
+                              Text_types %in% c("court hearing", "debate", "other - spoken", 
+                                                "tv or radio broadcast")  ~ "OTS",
+                              Text_types %in% c("document", "grant abstract", "letters", "newsletter", 
+                                                "other - written", "report", "thesis")         ~ "OTW"
+                              )
+         ) %>% 
+  select(!Text_types)
+
+
+# Then bind the two data frames back together
+
+dat <- bind_rows(dat_com, dat_oth) %>% 
+  relocate(Text_rnd, .after = Text_id)
+
+
+rm(iden, dat_com, dat_oth)
+
+
+
+# 3.2 Create a new column "V2_rnd" (for varying intercepts)
+# Following Levshina, we coded verbs with freq < 5 as "other"
+
+dat <- dat %>% 
+  group_by(V2_re) %>% 
   mutate(n_verb = n()
          ) %>% 
-  mutate(V2_rnd = if_else(n_verb < 5, "other", V2)
+  mutate(V2_rnd = if_else(n_verb < 5, "other", V2_re)
          ) %>% 
   ungroup() %>% 
-  relocate(V2_rnd, .after = V2) %>% 
-  select(!c(n_file, n_verb))
-
-
-
-# 3.2 Re-code predictors
-# V2_type: combine "idiom" and "phrasal v" into one category called "verb_phrase"
-# V2_permittee_control: convert "unclear" to NA
-
-dat <- dat %>% 
-  mutate(V2_type_re = case_when(V2_type == "idiom"        ~ "verb_phrase",
-                                V2_type == "phrasal verb" ~ "verb_phrase",
-                                TRUE ~ V2_type),
-         V2_permittee_control_re = case_when(V2_permittee_control == "no control" ~ "no_con",
-                                             V2_permittee_control == "unclear"    ~ NA_character_,
-                                             TRUE ~ V2_permittee_control)
-         ) %>% 
-  relocate(V2_type_re, .after = V2_type) %>% 
-  relocate(V2_permittee_control_re, .after = V2_permittee_control)
-
-
-
-# 3.3 Center continuous variable
-# V2_length (level-1/text-level predictor): grand-mean center (NOTE: mean V2 length = 5.3)
-
-dat <- dat %>% 
-  mutate(V2_length_c = V2_length - mean(V2_length))
-
-
-
-
-dat %>% count(V2_type_re)
-dat %>% count(V2_permittee_control_re)
-dat %>% count(V2_valency) 
-dat %>% count(Permittee_semantics)
-dat %>% count(Permitter_semantics)
-dat %>% count(Com_channel)
-dat %>% count(BNC_domain)
-dat %>% count(Domain_use) #HERE
-dat %>% count(V1_imperative)
+  relocate(V2_rnd, .after = V2_re) %>% 
+  select(!n_verb)
 
 
 
 
 
+# 4 Bayesian regression modeling
 
+# 4.1 Model 0
 
-
-
-# Model 0: Empty model
-# We begin by setting priors with weakly informative prior Normal(0,1) and exponential(1)
+# 4.1.1 We began by setting priors with weakly informative prior Normal(0,1) and exponential(1)
+# We carried out prior predictive checks at this step as well but code is provided below
 
 mod_prior <- c(set_prior("normal(0, 1)", class = "Intercept"),
                set_prior("exponential(1)", class = "sd")
                )
 
 
-# We then conduct prior predictive check with  sample_prior = "only" in code
-# Then, we extract posterior samples (intercept and varying intercept components) 
-# We plot the samples to see samples generated solely from the prior
-
-PriorCheck_ModEmpt <- brm(V1 ~ 1 + (1|Text_rnd) + (1|V2_rnd),
-                          data = dat, 
-                          family = bernoulli(link = "logit"),
-                          prior  = mod_prior,
-                          sample_prior = "only",
-                          chains = 4,
-                          iter   = 4000,
-                          warmup = 1000,
-                          seed   = 1112,
-                          cores  = parallel::detectCores() 
-                          )
-
-
-md_priorch <- posterior_samples(PriorCheck_ModEmpt, 
-                                pars = c("^b_", "^sd_"),
-                                add_chain = TRUE)
-
-
-md_priorch %>%
-  select(!c(chain, iter)) %>% 
-  mutate(across(.cols = everything(), 
-                .fns  = brms::inv_logit_scaled
-                ) ) %>% 
-  ggplot() + 
-  geom_density(aes(x = sd_Text_rnd__Intercept)) #+
-  geom_density(aes(x = b_Intercept))
-    
-# We can see, for example, the "fixed" effect term for the intercept ranges from probability of 0 to 1
-# with the peak lying around 0.5, indicating that before seeing data, our priors think the probability of 
-# 0.5 is the most plausible
-
-  
-# Finally, we run the intercept-only model to assess variability that exists in the data
+# 4.1.2 we ran the intercept-only model to assess variability that exists in the data
 # We do this by calculating intra-class correlation (ICC)
-  
+
 
 Mod_empt <- brm(V1 ~ 1 + (1|Text_rnd) + (1|V2_rnd),
                 data = dat, 
@@ -271,36 +290,137 @@ Mod_empt <- brm(V1 ~ 1 + (1|Text_rnd) + (1|V2_rnd),
 icc(summary(Mod_empt)$random[[1]][1] )
 icc(summary(Mod_empt)$random[[2]][1] )
 
-# ANSWER Intra-class correlation: BNC files = 0.91; Verbs2 = 0.49
-# 91% of the chances of "permit" being used is explained by between-file differences
-# 49% of the chances of "permit" being used is explained by between-verb differences
+# ANSWER Intra-class correlation: BNC files = 0.87; Verbs2 = 0.45
+# 87% of the chances of "permit" being used is explained by between-file differences
+# 45% of the chances of "permit" being used is explained by between-verb differences
 
-# We then fit a model with predictors to see if they can explain this variablity
-
-
-
-
-# Level-one (text/sentence) predictors: 
-# V2 = V2_type_re, V2_permittee_control_re, V2_valency, V2_length_c
-# V1 = V1_imperative
-# Permittee_semantics, Permitter_semantics
-
-# Level-two (file) predictors
-# Domain_use, Com_channel
+rm(Mod_empt, mod_prior)
 
 
 
-# Set-up contrasts
+# 4.2 Model 0.1: Select association measure that had the highest predictive accuracy
+
+# 4.2.1 Set weakly informative priors normal(0,1) for all beta and exponential(1) for sd
+
+Assoc_prior <- c(set_prior("normal(0, 1)", class = "Intercept"),
+                 set_prior("normal(0, 1)", class = "b"),
+                 set_prior("exponential(1)", class = "sd")
+                 )
+
+
+# 4.2.2 Conduct prior predictive checks with sample_prior = "only" in code
+# Then, extract posterior samples from the model and plot the samples to see 
+# what the model expects from the priors
+
+PriorCheck <- brm(V1 ~ 1 + Dp_word_given_con + (1|Text_rnd) + (1|V2_rnd),
+                  data   = dat, 
+                  family = bernoulli(link = "logit"),
+                  prior  = Assoc_prior,
+                  sample_prior = "only",
+                  chains = 4,
+                  iter   = 4000,
+                  warmup = 1000,
+                  seed   = 191,
+                  cores  = parallel::detectCores()
+                  )
+
+
+Sam_priorchk <- posterior_samples(PriorCheck, 
+                                pars = c("^b_", "^sd_"),
+                                add_chain = TRUE)
+
+
+Sam_priorchk %>%
+  select(!c(chain, iter)) %>% 
+  mutate(across(.cols = everything(), 
+                .fns  = brms::inv_logit_scaled
+                ) 
+         ) %>% 
+  ggplot() + 
+  # geom_density(aes(x = sd_Text_rnd__Intercept) )
+  # geom_density(aes(x = sd_V2_rnd__Intercept) )
+  # geom_density(aes(x = b_Intercept) )
+  geom_density(aes(x = b_Dp_word_given_con) )
+
+
+# We can see, for example, the "fixed effect" term for the intercept ranges from probability of 0 to 1
+# with the peak lying around 0.5, indicating that before seeing data, the model thinks the probability of 
+# 0.5 is the most plausible
+
+rm(PriorCheck, Sam_priorchk)
+
+
+
+
+
+# 4.3 Model 1: Continuous and categorical predictors 
+
+# 4.3.1 Re-code predictors
+# V2_permittee_control: convert "unclear" to NA
 
 dat <- dat %>% 
-  mutate(across(.cols = c(V2_type_re, V2_permittee_control_re, V2_valency,
-                          V1_imperative, Permittee_semantics, Permitter_semantics,
-                          Domain_use, Com_channel),
+  mutate(V2_permittee_control_re = case_when(V2_permittee_control == "no control" ~ "no_con",
+                                             V2_permittee_control == "unclear"    ~ NA_character_,
+                                             TRUE ~ V2_permittee_control)
+         ) %>% 
+  relocate(V2_permittee_control_re, .after = V2_permittee_control)
+
+
+# 4.3.2 Center continuous predictors
+# V2_re_length (level-1/text-level predictor): grand-mean center (NOTE: mean V2 length = 4.75)
+
+dat <- dat %>% 
+  mutate(V2_length_c = V2_re_length - mean(V2_re_length)) %>% 
+  relocate(V2_length_c, .after = V2_re_length) %>% 
+  mutate(across(.cols  = Dp_word_given_con:Minimum,
+                .fns   = ~. - mean(.),
+                .names = "{.col}_c")
+         )
+
+
+# 4.3.3 Check frequency counts
+
+dat %>% count(V2_permittee_control_re)
+dat %>% count(V2_valency) 
+dat %>% count(Permittee_semantics)
+dat %>% count(Permitter_semantics)
+dat %>% count(Com_channel)
+dat %>% count(BNC_domain)
+dat %>% count(Domain_use) 
+dat %>% count(V1_imperative)
+
+
+
+
+
+############################### NOTE ############################### 
+##### Level-one (text/sentence) predictors: 
+##### V2 = V2_permittee_control_re, V2_valency, V2_length_c
+##### V1 = V1_imperative
+##### Permittee_semantics, Permitter_semantics, association measures
+
+##### Level-two (file) predictors
+##### Domain_use, Com_channel
+####################################################################
+
+
+
+
+
+# 4.3.4 Set-up contrasts
+
+dat <- dat %>% 
+  mutate(across(.cols = c(V2_permittee_control_re, 
+                          V2_valency, 
+                          V1_imperative,
+                          Permittee_semantics, 
+                          Permitter_semantics,
+                          Domain_use, 
+                          Com_channel),
                 .fns = as.factor)
          )
 
 
-contrasts(dat$V2_type_re) <- contr.sum(2)
 contrasts(dat$V2_permittee_control_re) <- contr.sum(2)
 contrasts(dat$V2_valency) <- contr.sum(2)
 contrasts(dat$V1_imperative) <- contr.sum(2)
@@ -310,36 +430,113 @@ contrasts(dat$Domain_use) <- contr.sum(2)
 contrasts(dat$Com_channel) <- contr.sum(2)
 
 
-
-
-# Specify priors for the model
+# 4.3.5 Specify priors for the model
   
-mod1_prior <- c(set_prior("normal(0,1)", class = "Intercept"),
-                set_prior("normal(0,1)", class = "b"),
-                set_prior("exponential(1)", class = "sd")
-                )
+mod_prior <- c(set_prior("normal(0,1)", class = "Intercept"),
+               set_prior("normal(0,1)", class = "b"),
+               set_prior("exponential(1)", class = "sd")
+               )
 
 
-# Run the model
+# 4.3.6 Run models with all predictors + one association measure
 
-mod <- brm(V1 ~ V2_type_re + V2_permittee_control_re + V2_valency + V2_length_c  +
-             V1_imperative + Permittee_semantics + Permitter_semantics +
-             Domain_use + Com_channel + (1|Text_rnd) + (1|V2_rnd),
-             data   = dat,
-             family = bernoulli(link = "logit"),
-             prior  = mod1_prior,
-             chains = 4,
-             iter   = 4000,
-             warmup = 1000,
-             seed   = 1331,
-             cores  = parallel::detectCores(),
-             control = list(adapt_delta = 0.99)
-             ) 
+mod1 <- brm(V1 ~ V2_permittee_control_re + V2_valency + V2_length_c + V1_imperative +
+              Permittee_semantics + Permitter_semantics + Dp_word_given_con_c +
+              Domain_use + Com_channel + (1|Text_rnd) + (1|V2_rnd),
+            data   = dat,
+            family = bernoulli(link = "logit"),
+            prior  = mod_prior,
+            chains = 4,
+            iter   = 4000,
+            warmup = 1000,
+            seed   = 1150,
+            cores  = parallel::detectCores(),
+            control = list(adapt_delta = 0.99),
+            save_pars = save_pars(all = TRUE)
+            ) 
+
+mod2 <- update(mod1,
+               formula. = ~. - Dp_word_given_con_c + Dp_con_given_word_c,
+               newdata  = dat 
+               )
+
+mod3 <- update(mod1,
+               formula. = ~. - Dp_word_given_con_c + Coll_strength_c,
+               newdata  = dat
+               )
+
+mod4 <- update(mod1, 
+               formula. = ~. - Dp_word_given_con_c + Attract_c,
+               newdata  = dat
+               )
+
+mod5 <- update(mod1,
+               formula. = ~. - Dp_word_given_con_c + Relianc_c,
+               newdata  = dat
+               )
+
+mod6 <- update(mod1, 
+               formula. = ~. - Dp_word_given_con_c + Minimum_c,
+               newdata  = dat
+               )
 
 
-summary(mod)$fixed
+# 4.3.7 Add LOO-IC estimates to each model and compare all models
+
+l_mod1 <- add_criterion(mod1, criterion = c("loo", "waic"), moment_match = TRUE)
+l_mod2 <- add_criterion(mod2, criterion = c("loo", "waic"), moment_match = TRUE)
+l_mod3 <- add_criterion(mod3, criterion = c("loo", "waic"), moment_match = TRUE)
+l_mod4 <- add_criterion(mod4, criterion = c("loo", "waic"), moment_match = TRUE)
+l_mod5 <- add_criterion(mod5, criterion = c("loo", "waic"), moment_match = TRUE)
+l_mod6 <- add_criterion(mod6, criterion = c("loo", "waic"), moment_match = TRUE)
+
+loo_compare(l_mod1, l_mod2, l_mod3, l_mod4, l_mod5, l_mod6)
+
+
+# ANSWER: It was found that model with collostructional strength had the smallest
+# LOOIC score (though the estimates of it overlapped with zero)
+
+rm(mod1, mod2, mod3, mod4, mod5, mod6)
+
+
+# 4.3.8 Rerun the model with collo. strength
+
+mod_fin <- brm(V1 ~ V2_permittee_control_re + V2_valency + V2_length_c + V1_imperative +
+                 Permittee_semantics + Permitter_semantics + Coll_strength_c +
+                 Domain_use + Com_channel + (1|Text_rnd) + (1|V2_rnd),
+               data   = dat,
+               family = bernoulli(link = "logit"),
+               prior  = mod_prior,
+               chains = 4,
+               iter   = 4000,
+               warmup = 1000,
+               seed   = 1619,
+               cores  = parallel::detectCores(),
+               control = list(adapt_delta = 0.99),
+               save_pars = save_pars(all = TRUE)
+               ) 
+
+
+mod_fin_2 <- brm(V1 ~ V2_permittee_control_re + V2_valency + V2_length_c + V1_imperative +
+                   Permitter_semantics + Domain_use + Com_channel + (1|Text_rnd) + (1|V2_rnd),
+                 data   = dat,
+                 family = bernoulli(link = "logit"),
+                 prior  = mod_prior,
+                 chains = 4,
+                 iter   = 4000,
+                 warmup = 1000,
+                 seed   = 1619,
+                 cores  = parallel::detectCores(),
+                 control = list(adapt_delta = 0.99),
+                 save_pars = save_pars(all = TRUE)
+                 ) 
+
+
+
+
+
   
-
+###### Continue from here
 dat_est <- dat %>% 
   filter(across(.cols = everything(),
                 .fns  = ~!is.na(.)
@@ -439,3 +636,8 @@ as_tibble(ranef(mod)[[1]][,,], rownames = "Files")
 
 dat %>% count(Text_id
               )
+
+
+
+
+
