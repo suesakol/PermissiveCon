@@ -1,0 +1,878 @@
+Text_id,Text_types
+A03,book
+A04,book
+A05,book
+A07,book
+A08,book
+A0D,book
+A0F,book
+A0G,book
+A0H,book
+A0J,leaflet
+A0L,book
+A0M,book
+A0N,book
+A0P,book
+A0V,other - written
+A0X,other - written
+A11,book
+A16,magazine
+A19,magazine
+A1A,book
+A1B,book
+A1D,newspaper
+A1G,newspaper
+A1J,newspaper
+A1Y,newspaper
+A23,newspaper
+A25,newspaper
+A2E,newspaper
+A2M,newspaper
+A33,newspaper
+A39,newspaper
+A3L,newspaper
+A3N,newspaper
+A3T,newspaper
+A40,newspaper
+A49,newspaper
+A4K,newspaper
+A4N,newspaper
+A57,newspaper
+A5E,newspaper
+A5M,newspaper
+A5W,newspaper
+A5Y,book
+A60,book
+A65,book
+A67,magazine
+A68,book
+A69,book
+A6A,book
+A6D,book
+A6E,book
+A6J,book
+A6L,book
+A6M,book
+A6N,book
+A6T,book
+A6V,book
+A6Y,book
+A70,other - written
+A73,book
+A74,book
+A79,book
+A7A,book
+A7C,book
+A7D,magazine
+A7G,leaflet
+A7H,book
+A7K,magazine
+A7L,book
+A7N,other - written
+A80,newspaper
+A88,newspaper
+A8A,newspaper
+A8C,newspaper
+A8D,newspaper
+A8E,newspaper
+A8K,newspaper
+A8M,newspaper
+A96,newspaper
+A98,newspaper
+A9F,newspaper
+A9W,newspaper
+AA5,newspaper
+AA9,newspaper
+AAK,newspaper
+AAV,newspaper
+AB5,book
+AB9,book
+ABB,book
+ABD,magazine
+ABE,magazine
+ABG,magazine
+ABH,magazine
+ABJ,magazine
+ABK,magazine
+ABL,book
+ABP,book
+ABR,book
+ABS,magazine
+ABU,book
+ABV,book
+ABW,book
+ABX,book
+AC2,book
+AC3,book
+AC5,book
+AC7,book
+ACB,book
+ACE,book
+ACG,book
+ACH,book
+ACJ,book
+ACK,book
+ACV,book
+ACW,book
+ACY,magazine
+AD2,book
+AD7,book
+AD9,book
+ADF,book
+ADK,book
+ADX,book
+AE7,book
+AE9,book
+AEA,book
+AEB,book
+AHG,newspaper
+AHT,newspaper
+AJ2,newspaper
+AKD,newspaper
+AKE,newspaper
+AKP,newspaper
+AKY,newspaper
+AL1,newspaper
+AL3,newspaper
+ALJ,book
+ALM,academic journal
+ALW,academic journal
+ALX,academic journal
+ALY,academic journal
+AM0,leaflet
+AM4,book
+AMK,book
+AML,book
+AMU,book
+AMW,other - written
+AMY,book
+AN0,book
+AN1,book
+AN4,book
+AN5,book
+AN8,book
+ANA,book
+AND,book
+ANH,book
+ANJ,book
+ANL,book
+ANT,book
+ANU,book
+ANX,magazine
+ANY,book
+APD,book
+APK,other - written
+APL,other - written
+APM,book
+APN,book
+APR,book
+APT,book
+APU,book
+APW,book
+APX,magazine
+AR2,book
+AR3,book
+AR5,book
+AR8,book
+ARC,book
+ARJ,magazine
+ARS,book
+AS0,book
+AS3,book
+ASB,book
+ASD,book
+ASK,book
+ASW,book
+ASY,book
+AT3,book
+AT6,book
+AYJ,book
+AYK,book
+B07,book
+B0P,book
+B0S,book
+B10,book
+B11,book
+B14,book
+B1G,book
+B1J,book
+B1P,book
+B21,book
+B26,book
+B2D,book
+B2K,book
+B2W,book
+B3A,book
+B3C,book
+B3D,book
+B71,magazine
+B74,magazine
+B75,magazine
+B76,magazine
+B78,magazine
+B79,magazine
+B7G,magazine
+B7J,magazine
+B7K,magazine
+B7M,magazine
+BLX,book
+BM2,book
+BMA,book
+BME,book
+BMG,book
+BMH,book
+BML,book
+BMP,book
+BN3,book
+BN4,book
+BN8,book
+BN9,book
+BNE,book
+BNY,book
+BP0,book
+BP1,book
+BP4,book
+BP5,book
+BP9,book
+BPA,book
+BPB,book
+BPC,other - written
+BPD,book
+BPG,book
+C85,book
+C8A,book
+C8B,book
+C8F,book
+C8L,book
+C8M,book
+C8P,book
+C8U,magazine
+C91,magazine
+C92,magazine
+C95,magazine
+C97,magazine
+C9A,book
+C9E,magazine
+C9R,book
+C9S,book
+CA1,book
+CA3,book
+CAG,magazine
+CAJ,magazine
+CAP,magazine
+CB1,book
+CB2,magazine
+CB4,magazine
+CB8,magazine
+CBF,newspaper
+CBK,book
+CBP,book
+CBT,book
+CBU,book
+CBV,book
+CBW,book
+CBX,book
+CBY,book
+CCB,book
+CCC,book
+CCD,book
+CCU,contract
+CD2,book
+CDM,book
+CDP,book
+CDR,book
+CDS,book
+CE2,book
+CE7,book
+CE8,book
+CE9,book
+CEP,newspaper
+CEW,book
+CFE,book
+CFF,book
+CFH,report
+CFR,leaflet
+CG9,other - written
+CGE,book
+CHL,book
+CHP,book
+CJ1,newspaper
+CJ4,newspaper
+CJD,book
+CJG,book
+CJH,book
+CJP,report
+CJR,report
+CK1,book
+CKC,book
+CKS,book
+CKU,newspaper
+CL1,book
+CL6,book
+CLD,book
+CLN,book
+CLR,book
+CLX,book
+CM2,book
+CMM,book
+CMU,book
+CN1,book
+CN2,book
+CNG,magazine
+CNN,magazine
+CPU,magazine
+CR4,magazine
+CR8,magazine
+CR9,magazine
+CRK,book
+CRR,book
+CS3,book
+CSD,magazine
+CSU,magazine
+CTC,magazine
+CTG,magazine
+CTW,book
+EA0,academic journal
+EA1,academic journal
+EA4,book
+EAJ,book
+EAK,magazine
+EAX,book
+EB2,book
+EBM,book
+EBP,book
+EBR,book
+EBS,newspaper
+EBT,newspaper
+EC3,book
+EC7,academic journal
+ECD,book
+ECU,magazine
+ED0,other - written
+ED6,book
+EDJ,book
+EDK,book
+EDL,book
+EDP,book
+EDU,magazine
+EDY,book
+EE0,leaflet
+EE9,book
+EEA,leaflet
+EEC,academic journal
+EEF,leaflet
+EER,book
+EF3,book
+EF4,book
+EF5,book
+EF6,book
+EF9,book
+EFA,book
+EFN,book
+EFV,book
+EUU,book
+EV3,book
+EV9,book
+EVF,book
+EVK,book
+EVN,book
+EVP,book
+EVR,book
+EVS,book
+EVV,book
+EVY,book
+EW4,book
+EW5,book
+EW6,book
+EW9,book
+EWG,book
+EWW,book
+EX5,book
+EX8,book
+F7A,meeting
+F7C,meeting
+F7N,lecture/ training
+F88,lecture/ training
+F89,presentation/ public speech
+F8U,meeting
+F9B,other - written
+F9C,book
+F9G,book
+F9S,book
+F9T,book
+F9V,book
+F9W,book
+F9X,book
+F9Y,book
+FA1,book
+FA9,book
+FAF,book
+FAM,book
+FAN,book
+FAT,book
+FAU,book
+FAV,book
+FAY,book
+FB2,book
+FB5,book
+FBE,book
+FBJ,book
+FBP,magazine
+FEF,book
+FEH,book
+FES,book
+FET,book
+FEU,book
+FEW,book
+FM0,lecture/ training
+FM1,lecture/ training
+FM2,meeting
+FM5,lecture/ training
+FM7,presentation/ public speech
+FMK,lecture/ training
+FMP,meeting
+FMS,meeting
+FNR,book
+FP0,book
+FP2,book
+FP4,book
+FPJ,book
+FR7,book
+FRB,book
+FRC,book
+FRN,book
+FRT,book
+FSE,book
+FSS,book
+FST,book
+FSU,book
+FSV,book
+FT0,academic journal
+FT2,academic journal
+FT8,book
+FTC,academic journal
+FTT,book
+FTX,book
+FU4,book
+FU5,book
+FUA,book
+FUE,lecture/ training
+FUK,meeting
+FUL,meeting
+FXJ,meeting
+FYB,interview
+FYS,book
+G02,book
+G05,book
+G06,book
+G08,book
+G0H,book
+G0K,book
+G0X,book
+G10,book
+G14,book
+G17,book
+G1A,book
+G1C,book
+G1D,book
+G1H,book
+G1L,book
+G1Y,book
+G27,book
+G28,academic journal
+G2G,magazine
+G2J,magazine
+G2S,magazine
+G31,magazine
+G39,book
+G3A,book
+G3B,book
+G3C,other - written
+G3F,book
+G3J,book
+G3L,book
+G3M,other - written
+G3N,book
+G46,medical consultation
+G48,medical consultation
+G4E,medical consultation
+G4F,presentation/ public speech
+G4G,presentation/ public speech
+G4H,presentation/ public speech
+G4X,meeting
+G56,medical consultation
+G5H,other - spoken
+G5J,interview
+G5K,meeting
+G5M,medical consultation
+G5P,medical consultation
+G5T,medical consultation
+G5U,medical consultation
+G60,medical consultation
+G61,lecture/ training
+GSY,book
+GT9,book
+GU5,book
+GU7,book
+GU8,book
+GUC,book
+GUR,book
+GUW,book
+GVA,book
+GVD,book
+GVG,book
+GVH,book
+GVK,book
+GVR,book
+GW0,book
+GW6,book
+GW9,book
+GWG,book
+GWH,book
+GWJ,academic journal
+GWM,book
+GWN,academic journal
+GXB,other - written
+GXE,newsletter
+GXH,meeting
+GXJ,leaflet
+GY4,meeting
+GYR,lecture/ training
+H06,book
+H0B,book
+H0N,book
+H0U,book
+H0Y,book
+H46,book
+H4V,medical consultation
+H4X,medical consultation
+H56,medical consultation
+H5N,medical consultation
+H61,seminar/ conference
+H78,book
+H7A,book
+H7B,book
+H7E,book
+H7K,book
+H7P,book
+H81,book
+H82,book
+H88,book
+H8D,book
+H8E,book
+H8K,book
+H91,book
+H97,book
+H99,book
+H9A,academic journal
+H9C,book
+H9H,book
+H9J,lecture/ training
+H9L,book
+H9M,book
+H9S,book
+H9X,book
+HA0,book
+HA3,book
+HAC,magazine
+HB5,document
+HBH,magazine
+HBM,other - written
+HBP,other - written
+HCE,newsletter
+HCK,magazine
+HD1,other - written
+HDN,seminar/ conference
+HDP,seminar/ conference
+HDR,other - written
+HDT,seminar/ conference
+HDU,seminar/ conference
+HDV,seminar/ conference
+HDW,seminar/ conference
+HE2,lecture/ training
+HGD,book
+HGR,book
+HGS,book
+HGV,book
+HH1,book
+HH2,book
+HHF,other - written
+HHH,other - written
+HHK,other - written
+HHL,other - written
+HHN,other - written
+HHV,meeting
+HHW,meeting
+HHX,grant abstract
+HJ0,grant abstract
+HJ1,grant abstract
+HJ3,newspaper
+HJ4,newspaper
+HJ8,letters
+HJA,other - written
+HJD,other - written
+HKP,newspaper
+HKU,newspaper
+HKV,newspaper
+HKY,newspaper
+HL1,newspaper
+HL3,newspaper
+HL4,newspaper
+HL7,newspaper
+HLA,newspaper
+HLD,newspaper
+HLF,newspaper
+HLG,newspaper
+HLJ,newspaper
+HLM,newspaper
+HLN,newspaper
+HLP,newspaper
+HLR,newspaper
+HLU,newspaper
+HLW,seminar/ conference
+HLY,seminar/ conference
+HNK,book
+HNL,book
+HNM,book
+HNV,book
+HP3,academic journal
+HP5,other - written
+HP6,newsletter
+HPD,other - written
+HPF,other - written
+HPK,newsletter
+HPY,book
+HR1,book
+HR3,book
+HRD,book
+HRH,book
+HRK,book
+HRT,other - written
+HRW,other - written
+HSC,essays
+HSG,book
+HTD,other - written
+HTF,book
+HTJ,book
+HTV,book
+HU3,academic journal
+HU5,other - written
+HU9,other - written
+HUC,seminar/ conference
+HUK,lecture/ training
+HUL,lecture/ training
+HUM,lecture/ training
+HUN,lecture/ training
+HVG,meeting
+HVH,meeting
+HVJ,meeting
+HWF,book
+HWH,book
+HWT,academic journal
+HWV,academic journal
+HWW,academic journal
+HX9,thesis
+HXC,book
+HXE,book
+HXG,book
+HXN,book
+HXT,book
+HXV,book
+HXW,book
+HXX,book
+HXY,book
+HY5,book
+HY7,book
+HY8,book
+HYD,lecture/ training
+HYR,lecture/ training
+HYS,lecture/ training
+HYX,meeting
+J0U,book
+J0V,book
+J1U,newspaper
+J1V,book
+J1X,other - written
+J27,other - written
+J2N,other - written
+J2V,other - written
+J3K,other - written
+J6N,book
+J6P,book
+J6R,book
+J6S,book
+J6T,book
+J70,book
+J72,book
+J76,book
+J77,book
+J78,book
+J7B,book
+J7C,book
+J7D,book
+J7E,book
+J8D,lecture/ training
+J8K,lecture/ training
+J9A,meeting
+J9G,other - spoken
+JA0,interview
+JA1,interview
+JA2,interview
+JA3,interview
+JA4,interview
+JA9,meeting
+JAC,meeting
+JJ6,lecture/ training
+JJ8,lecture/ training
+JJH,lecture/ training
+JJL,seminar/ conference
+JK7,lecture/ training
+JK8,lecture/ training
+JK9,lecture/ training
+JN6,meeting
+JND,lecture/ training
+JNF,meeting
+JNG,meeting
+JNH,meeting
+JNJ,meeting
+JNK,meeting
+JNM,meeting
+JNP,meeting
+JNX,other - spoken
+JNY,other - spoken
+JSA,lecture/ training
+JSC,court hearing
+JSD,seminar/ conference
+JSE,other - spoken
+JSJ,debate
+JSK,other - spoken
+JSL,other - spoken
+JSM,other - spoken
+JSN,lecture/ training
+JST,lecture/ training
+JT4,lecture/ training
+JXJ,book
+JXN,book
+JY7,book
+JYF,book
+K5T,academic journal
+K5Y,academic journal
+K6H,tv or radio broadcast
+K74,lecture/ training
+K79,presentation/ public speech
+K8S,book
+K90,book
+KA1,essays
+KA2,essays
+KA3,essays
+KAY,essays
+KGK,tv or radio broadcast
+KGL,lecture/ training
+KGT,lecture/ training
+KGU,lecture/ training
+KLG,lecture/ training
+KLT,seminar/ conference
+KLV,meeting
+KLX,meeting
+KLY,seminar/ conference
+KM1,seminar/ conference
+KM4,meeting
+KS0,meeting
+KS9,magazine
+A0R,book
+A0U,book
+A15,book
+A6G,book
+A6X,magazine
+A7J,book
+A7W,newspaper
+A91,newspaper
+AA1,newspaper
+AAG,newspaper
+AAX,newspaper
+AAY,other - written
+AC6,book
+ACR,newspaper
+ACS,book
+AR7,magazine
+AYM,leaflet
+BNJ,other - written
+C9U,book
+CNA,academic journal
+EEB,book
+F7J,meeting
+FLS,meeting
+FUF,lecture/ training
+FUJ,meeting
+FUT,presentation/ public speech
+G4C,medical consultation
+G58,medical consultation
+GYX,lecture/ training
+H5E,meeting
+H5M,medical consultation
+H5S,medical consultation
+HHD,magazine
+HHJ,magazine
+HJ5,other - written
+HUD,seminar/ conference
+HUH,lecture/ training
+J95,lecture/ training
+JA5,meeting
+JJC,interview
+JN8,meeting
+JNS,other - spoken
+JNT,other - spoken
+JNW,interview
+JP0,meeting
+JP4,lecture/ training
+JP7,lecture/ training
+JT5,other - spoken
+K71,lecture/ training
+KAU,letters
+KGS,lecture/ training
+KM0,seminar/ conference
+KP6,other - spoken
+KRT,tv or radio broadcast
+KS1,meeting
+KSR,other - spoken
+KSS,other - spoken
+KST,other - spoken
+KSU,other - spoken
+KSV,other - spoken
+KSW,other - spoken
+AA0,newspaper
+B05,book
+BM9,book
+EFP,book
+EFW,book
+FBV,other - written
+FC0,other - written
+FCJ,other - written
+FCK,other - written
+FCL,other - written
+FCN,other - written
+FCR,other - written
+FCT,other - written
+FCX,other - written
+FCY,other - written
+FD1,other - written
+FD3,other - written
+FD8,other - written
+FD9,other - written
+FDG,other - written
+FDH,other - written
+FDR,other - written
+FDS,other - written
+FDT,other - written
+FDW,other - written
+FDY,other - written
+FE1,other - written
+FE2,other - written
+HJ7,academic journal
+J1A,book
+K2V,newspaper
+K3X,newspaper
+K4T,newspaper
+K4V,newspaper
+K5D,newspaper
+K97,newspaper
