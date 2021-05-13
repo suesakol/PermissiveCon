@@ -1,6 +1,6 @@
 ##########################################################################
 ## Analysis script: Permissive construction (working title)             
-## April 11, 2021
+## April 17, 2021
 ##
 ##########################################################################
 
@@ -49,7 +49,7 @@ icc <- function(x) {
 
 permis <- read_csv(file = "./Data/dat.csv")
 
-# If you don't store this file in "Data" folder but instead in main folder, use: 
+# If the file is in a different folder (e.g., a primary folder), use: 
 # Permis <- read_csv(file = "dat.csv")
 
 
@@ -274,8 +274,7 @@ mod_prior <- c(set_prior("normal(0, 1)", class = "Intercept"),
 # 4.1.2 we ran the intercept-only model to assess variability that exists in the data
 # We do this by calculating intra-class correlation (ICC)
 
-
-Mod_empt <- brm(V1 ~ 1 + (1|Text_rnd) + (1|V2_rnd),
+mod_empt <- brm(V1 ~ 1 + (1|Text_rnd) + (1|V2_rnd),
                 data = dat, 
                 family = bernoulli(link = "logit"),
                 prior  = mod_prior,
@@ -287,76 +286,23 @@ Mod_empt <- brm(V1 ~ 1 + (1|Text_rnd) + (1|V2_rnd),
                 )  
 
 
-icc(summary(Mod_empt)$random[[1]][1] )
-icc(summary(Mod_empt)$random[[2]][1] )
+icc(summary(mod_empt)$random[[1]][1] )
+icc(summary(mod_empt)$random[[2]][1] )
 
 # ANSWER Intra-class correlation: BNC files = 0.87; Verbs2 = 0.45
 # 87% of the chances of "permit" being used is explained by between-file differences
 # 45% of the chances of "permit" being used is explained by between-verb differences
 
-rm(Mod_empt, mod_prior)
+rm(mod_empt, mod_prior)
 
 
 
-# 4.2 Model 0.1: Select association measure that had the highest predictive accuracy
+# 4.2 Model 1: Continuous and categorical predictors 
 
-# 4.2.1 Set weakly informative priors normal(0,1) for all beta and exponential(1) for sd
+# 4.2.1 Re-code predictors
+# V2_permittee_control: convert "unclear" (n = 194) to NA
 
-Assoc_prior <- c(set_prior("normal(0, 1)", class = "Intercept"),
-                 set_prior("normal(0, 1)", class = "b"),
-                 set_prior("exponential(1)", class = "sd")
-                 )
-
-
-# 4.2.2 Conduct prior predictive checks with sample_prior = "only" in code
-# Then, extract posterior samples from the model and plot the samples to see 
-# what the model expects from the priors
-
-PriorCheck <- brm(V1 ~ 1 + Dp_word_given_con + (1|Text_rnd) + (1|V2_rnd),
-                  data   = dat, 
-                  family = bernoulli(link = "logit"),
-                  prior  = Assoc_prior,
-                  sample_prior = "only",
-                  chains = 4,
-                  iter   = 4000,
-                  warmup = 1000,
-                  seed   = 191,
-                  cores  = parallel::detectCores()
-                  )
-
-
-Sam_priorchk <- posterior_samples(PriorCheck, 
-                                pars = c("^b_", "^sd_"),
-                                add_chain = TRUE)
-
-
-Sam_priorchk %>%
-  select(!c(chain, iter)) %>% 
-  mutate(across(.cols = everything(), 
-                .fns  = brms::inv_logit_scaled
-                ) 
-         ) %>% 
-  ggplot() + 
-  # geom_density(aes(x = sd_Text_rnd__Intercept) )
-  # geom_density(aes(x = sd_V2_rnd__Intercept) )
-  # geom_density(aes(x = b_Intercept) )
-  geom_density(aes(x = b_Dp_word_given_con) )
-
-
-# We can see, for example, the "fixed effect" term for the intercept ranges from probability of 0 to 1
-# with the peak lying around 0.5, indicating that before seeing data, the model thinks the probability of 
-# 0.5 is the most plausible
-
-rm(PriorCheck, Sam_priorchk)
-
-
-
-
-
-# 4.3 Model 1: Continuous and categorical predictors 
-
-# 4.3.1 Re-code predictors
-# V2_permittee_control: convert "unclear" to NA
+dat %>% count(V2_permittee_control)
 
 dat <- dat %>% 
   mutate(V2_permittee_control_re = case_when(V2_permittee_control == "no control" ~ "no_con",
@@ -367,11 +313,15 @@ dat <- dat %>%
 
 
 # 4.3.2 Center continuous predictors
-# V2_re_length (level-1/text-level predictor): grand-mean center (NOTE: mean V2 length = 4.75)
+# V2_re_length (level-1/text-level predictor): grand-mean center (NOTE: mean = 4.75; range = 2, 13)
+# V1_distance (level-1/text-level predictor): grand-mean center (NOTE: mean = 1.92; range = 1, 20)
 
 dat <- dat %>% 
-  mutate(V2_length_c = V2_re_length - mean(V2_re_length)) %>% 
+  mutate(V1_distance_c = V1_distance - mean(V1_distance),
+         V2_length_c = V2_re_length - mean(V2_re_length)
+         ) %>% 
   relocate(V2_length_c, .after = V2_re_length) %>% 
+  relocate(V1_distance_c, .after = V1_distance) %>% 
   mutate(across(.cols  = Dp_word_given_con:Minimum,
                 .fns   = ~. - mean(.),
                 .names = "{.col}_c")
@@ -391,19 +341,15 @@ dat %>% count(V1_imperative)
 
 
 
+#################################### NOTE #################################### 
+# Level-one (text/sentence) predictors: 
+# V2 = V2_permittee_control_re, V2_valency, V2_length_c, association scores 
+# V1 = V1_imperative, V1_distance (from V1 to V2)                          
+# N = Permittee_semantics, Permitter_semantics
 
-
-############################### NOTE ############################### 
-##### Level-one (text/sentence) predictors: 
-##### V2 = V2_permittee_control_re, V2_valency, V2_length_c
-##### V1 = V1_imperative
-##### Permittee_semantics, Permitter_semantics, association measures
-
-##### Level-two (file) predictors
-##### Domain_use, Com_channel
-####################################################################
-
-
+# Level-two (file) predictors
+# Domain_use, Com_channel
+############################################################################## 
 
 
 
@@ -438,10 +384,58 @@ mod_prior <- c(set_prior("normal(0,1)", class = "Intercept"),
                )
 
 
-# 4.3.6 Run models with all predictors + one association measure
+# 4.3.6 Conduct prior predictive checks with sample_prior = "only" in code
+# Then, extract posterior samples from the model and plot the samples to see 
+# what the model expects from the priors
 
-mod1 <- brm(V1 ~ V2_permittee_control_re + V2_valency + V2_length_c + V1_imperative +
-              Permittee_semantics + Permitter_semantics + Dp_word_given_con_c +
+# We used some of the predictors to run this model (continuous and categorical)
+
+priorcheck <- brm(V1 ~ 1 + V2_permittee_control_re + V2_length_c + V1_imperative + 
+                    V1_distance_c + Domain_use + (1|Text_rnd) + (1|V2_rnd),
+                  data   = dat, 
+                  family = bernoulli(link = "logit"),
+                  prior  = mod_prior,
+                  sample_prior = "only",
+                  chains = 4,
+                  iter   = 4000,
+                  warmup = 1000,
+                  seed   = 191,
+                  cores  = parallel::detectCores()
+                  )
+
+
+sam_priorchk <- posterior_samples(priorcheck, 
+                                  pars = c("^b_", "^sd_"),
+                                  add_chain = TRUE)
+
+
+sam_priorchk %>%
+  select(!c(chain, iter)) %>% 
+  mutate(across(.cols = everything(), 
+                .fns  = brms::inv_logit_scaled
+                ) 
+         ) %>% 
+  ggplot() + 
+  # geom_density(aes(x = sd_Text_rnd__Intercept) )
+  # geom_density(aes(x = sd_V2_rnd__Intercept) )
+  # geom_density(aes(x = b_Intercept) )
+  # geom_density(aes(x = b_V1_imperative1) )
+  # geom_density(aes(x = b_V1_distance_c) )
+  geom_density(aes(x = b_V2_length_c) )
+
+
+# We can see, for example, the "fixed effect" term for the intercept ranges from probability of 0 to 1
+# with the peak lying around 0.5, indicating that before seeing data, the model thinks the probability of 
+# 0.5 is the most plausible
+
+rm(priorcheck, sam_priorchk)
+
+
+
+# 4.3.7 Run models with all predictors + one association measure
+
+mod1 <- brm(V1 ~ 1 + V2_permittee_control_re + V2_valency + V2_length_c + V1_imperative +
+              V1_distance_c + Permittee_semantics + Permitter_semantics + Dp_word_given_con_c +
               Domain_use + Com_channel + (1|Text_rnd) + (1|V2_rnd),
             data   = dat,
             family = bernoulli(link = "logit"),
@@ -481,7 +475,7 @@ mod6 <- update(mod1,
                )
 
 
-# 4.3.7 Add LOO-IC estimates to each model and compare all models
+# 4.3.8 Add LOO-IC estimates to each model and compare all models
 
 l_mod1 <- add_criterion(mod1, criterion = c("loo", "waic"), moment_match = TRUE)
 l_mod2 <- add_criterion(mod2, criterion = c("loo", "waic"), moment_match = TRUE)
@@ -490,7 +484,8 @@ l_mod4 <- add_criterion(mod4, criterion = c("loo", "waic"), moment_match = TRUE)
 l_mod5 <- add_criterion(mod5, criterion = c("loo", "waic"), moment_match = TRUE)
 l_mod6 <- add_criterion(mod6, criterion = c("loo", "waic"), moment_match = TRUE)
 
-loo_compare(l_mod1, l_mod2, l_mod3, l_mod4, l_mod5, l_mod6)
+loo_compare(l_mod1, l_mod2, l_mod3, l_mod4, l_mod5, l_mod6, criterion = "loo")
+loo_compare(l_mod1, l_mod2, l_mod3, l_mod4, l_mod5, l_mod6, criterion = "waic")
 
 
 # ANSWER: It was found that model with collostructional strength had the smallest
@@ -499,143 +494,121 @@ loo_compare(l_mod1, l_mod2, l_mod3, l_mod4, l_mod5, l_mod6)
 rm(mod1, mod2, mod3, mod4, mod5, mod6)
 
 
-# 4.3.8 Rerun the model with collo. strength
+# 4.3.9 Rerun the model with collo. strength as the association measure
 
-mod_fin <- brm(V1 ~ V2_permittee_control_re + V2_valency + V2_length_c + V1_imperative +
-                 Permittee_semantics + Permitter_semantics + Coll_strength_c +
-                 Domain_use + Com_channel + (1|Text_rnd) + (1|V2_rnd),
-               data   = dat,
-               family = bernoulli(link = "logit"),
-               prior  = mod_prior,
-               chains = 4,
-               iter   = 4000,
-               warmup = 1000,
-               seed   = 1619,
-               cores  = parallel::detectCores(),
-               control = list(adapt_delta = 0.99),
-               save_pars = save_pars(all = TRUE)
-               ) 
-
-
-mod_fin_2 <- brm(V1 ~ V2_permittee_control_re + V2_valency + V2_length_c + V1_imperative +
-                   Permitter_semantics + Domain_use + Com_channel + (1|Text_rnd) + (1|V2_rnd),
-                 data   = dat,
-                 family = bernoulli(link = "logit"),
-                 prior  = mod_prior,
-                 chains = 4,
-                 iter   = 4000,
-                 warmup = 1000,
-                 seed   = 1619,
-                 cores  = parallel::detectCores(),
-                 control = list(adapt_delta = 0.99),
-                 save_pars = save_pars(all = TRUE)
-                 ) 
+modf <- brm(V1 ~ 1 + V2_permittee_control_re + V2_valency + V2_length_c + V1_imperative +
+              V1_distance_c + Permittee_semantics + Permitter_semantics + Coll_strength_c +
+              Domain_use + Com_channel + (1|Text_rnd) + (1|V2_rnd),
+            data   = dat,
+            family = bernoulli(link = "logit"),
+            prior  = mod_prior,
+            chains = 4,
+            iter   = 4000,
+            warmup = 1000,
+            seed   = 1619,
+            cores  = parallel::detectCores(),
+            control = list(adapt_delta = 0.99),
+            save_pars = save_pars(all = TRUE)
+            ) 
 
 
+summary(modf)$fixed
+summary(modf)$random[[1]]
+summary(modf)$random[[2]]
+
+icc(summary(modf)$random[[1]][1])
+icc(summary(modf)$random[[2]][1])
 
 
+# 4.3.10 Rerun the model without Permittee_semantics
+# Estimates overlapped with zero; thus, the predictor was dropped
+# Estimates of collostructional strength also overlapped with zero. Despite this,
+# we kept the predictor in since we're interested in how this info predicted human response
 
-  
-###### Continue from here
-dat_est <- dat %>% 
-  filter(across(.cols = everything(),
-                .fns  = ~!is.na(.)
-                )
-         )
-
-
-# Extract expected values of the posterior predictive distribution
-
-pred <- fitted(mod, scale = "response") %>% 
-  as_tibble()
+modr <- update(modf, 
+               formula. = ~. - Permittee_semantics,
+               newdata  = dat
+               )
 
 
-# Combine the two data sets
-
-dat_est <- bind_cols(dat_est, pred)
+summary(modr)$fixed
 
 
-write_csv(dat_est, file = "dat_estimate.csv")
+# 4.3.11 Compare the two models
+
+l_modf <- add_criterion(modf, "loo", moment_match = TRUE)
+l_modr <- add_criterion(modr, "loo", moment_match = TRUE)
+
+loo_compare(l_modf, l_modr)
 
 
+# 4.3.12 Make predictions of the response values < logit(theta) > 
+
+# We used predict() to obtain predicted values of the response variable  
+# taking into account variance components and residuals included in the model
+# e.g., sd_Intercept_V2, sd_Intercept_file, etc.
+
+# We filtered out NA from data and bind columns from these two tibbles
+
+dat_est <- bind_cols(dat %>% 
+                       filter(across(.cols = everything(),
+                                     .fns  = ~!is.na(.)
+                                     )
+                              ),
+                     predict(modr, summary = T) %>% 
+                       as_tibble() %>% 
+                       select(Estimate)
+                     )
 
 
+# We binned probabilities into 5 distinct groups
 
-
-
-
-# Mutate new columns with estimates from the model 
-# Then, sum all these estimates up and convert the sum to probability
-
-dat_est <- dat %>% 
-  mutate(Est_Int             = -2.3629171,
-         Est_V2_type         = if_else(V2_type_re == "verb", 0.2624965, -0.2624965
-                                       ),
-         Est_V2_permitee_con = case_when(V2_permittee_control_re == "control" ~ 0.8788518,
-                                         V2_permittee_control_re == "no_con"  ~ -0.8788518,
-                                         is.na(V2_permittee_control_re) ~ NA_real_
-                                         ),
-         Est_V2_valency      = if_else(V2_valency == "active", -1.2648889, 1.2648889
-                                       ),
-         Est_V1_imperative   = if_else(V1_imperative == "imperative", -2.1841174, 2.1841174
-                                       ),
-         Est_Permittee_seman = if_else(Permittee_semantics == "animate", -0.2186778, 0.2186778
-                                       ),
-         Est_Permitter_seman = if_else(Permitter_semantics == "animate", -1.6444657, 1.6444657
-                                       ),
-         Est_Domain_use      = case_when(Domain_use == "personal" ~ -0.4653962, 
-                                         Domain_use == "public" ~ 0.4653962,
-                                         is.na(Domain_use) ~ NA_real_
-                                         ),
-         Est_Com_channel     = if_else(Com_channel == "spoken", -1.8841794, 1.8841794),
-         Est_V2_length       = case_when(V2_length == 2 ~ 0.1212567 * -3,
-                                         V2_length == 3 ~ 0.1212567 * -2,
-                                         V2_length == 4 ~ 0.1212567 * -1,
-                                         V2_length == 5 ~ 0.1212567 * 0,
-                                         V2_length == 6 ~ 0.1212567 * 1,
-                                         V2_length == 7 ~ 0.1212567 * 2,
-                                         V2_length == 8 ~ 0.1212567 * 3,
-                                         V2_length == 9 ~ 0.1212567 * 4,
-                                         V2_length == 10 ~ 0.1212567 * 5,
-                                         V2_length == 11 ~ 0.1212567 * 6,
-                                         V2_length == 12 ~ 0.1212567 * 7,
-                                         V2_length == 13 ~ 0.1212567 * 8,
-                                         V2_length == 14 ~ 0.1212567 * 9,
-                                         V2_length == 15 ~ 0.1212567 * 10,
-                                         V2_length == 21 ~ 0.1212567 * 16
-                                         )
-         )
-
-dat_est <- dat_est %>%
-  rowwise() %>% 
-  mutate(Est_sum = sum(c_across(cols = starts_with("Est")), na.rm = TRUE),
-         Est_prob = brms::inv_logit_scaled(Est_sum)
+dat_est <- dat_est %>% 
+  mutate(Estimate = round(Estimate, digits = 3)
          ) %>% 
-  mutate(Est_prob = round(Est_prob, digits = 3)
-         )
-
-
-
-
-a <- posterior_samples(mod) %>% 
-  select(starts_with("r_Text")) %>% 
-  pivot_longer(cols = everything(), names_to = "Par", values_to = "Est")
-
-a %>% 
-  group_by(Par) %>% 
-  summarize(M = mean(Est)) #%>% 
-  summarize(me = mean(M))
-
-
-as_tibble(ranef(mod)[[1]][,,], rownames = "Files")
+  mutate(across(.cols = Estimate,
+                .fns  = ~case_when(. <= 0.199             ~ "Bin_1",
+                                   . >=  0.2 & . <= 0.399 ~ "Bin_2",
+                                   . >=  0.4 & . <= 0.599 ~ "Bin_3",
+                                   . >=  0.6 & . <= 0.799 ~ "Bin_4",
+                                   . >=  0.8              ~ "Bin_5"
+                                   ),
+                .names = "{.col}_b"
+                  )
+         ) 
 
 
 
 
 
 
-dat %>% count(Text_id
-              )
+
+
+# 4.3.13 Randomly select sentences
+
+set.seed(122021)
+
+stimuli <- dat_est %>% 
+  filter(V2_type == "verb") %>% 
+  filter(Estimate_b %in% c("Bin_2", "Bin_3")) %>% 
+  group_by(Estimate_b, V1_imperative, V2_permittee_control_re, V2_valency, 
+           Permitter_semantics, Com_channel, Domain_use) %>% 
+  slice_sample(n = 4, replace = FALSE) %>% 
+  ungroup() %>% 
+  mutate(No = row_number()) %>% 
+  relocate(No)
+
+stimuli <- stimuli %>% 
+  arrange(Estimate_b, V2_permittee_control_re, V2_valency, Permitter_semantics, Com_channel, Domain_use, V1_imperative)
+
+stimuli %>%
+  ggplot() + 
+  geom_point(aes(x = No, y = Estimate)
+             )
+
+
+write_csv(stimuli, file = "bin2_3_moreexp.csv")
+
 
 
 
