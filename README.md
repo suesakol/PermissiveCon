@@ -15,4 +15,7 @@ This repository contains supplementary materials (experiment, data and analysis 
 
 The following files are inside the **Data** folder:
 
-* **dat.csv**: corpus data from the BNC. Minus the column-header row, the file contains 1,636 lines. This is divided into 818 lines of *let* and 818 lines of *permit*.
+* **dat.csv**: Corpus data from the BNC. Minus the column-header row, the file contains 1,636 lines. This is divided into 818 lines of *let* and 818 lines of *permit*.
+* **dca_results.csv**: A distinctive collexeme analysis report of the corpus data.
+* **text_identifier.csv**: 
+* **verb_list.txt**: 
