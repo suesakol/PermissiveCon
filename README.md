@@ -1,9 +1,18 @@
 # Permissive Construction
 
-This repo hosts supporting materials of the project Permissive Construction (working title)
+Sakol Suethanapornkul (Thammasat University) [[Personal website](https://sakol.netlify.app)]
+
+This repository contains supplementary materials (experiment, data and analysis plan) for the paper titled "XXX"
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
+
+[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
+[cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
 
 
 
-## Data
+## Overview
 
-There are X files in the Data folder. 
+The following files are inside the **Data** folder:
+
+* **dat.csv**: corpus data from the BNC. Minus the column-header row, the file contains 1,636 lines. This is divided into 818 lines of *let* and 818 lines of *permit*.
