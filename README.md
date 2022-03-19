@@ -17,5 +17,5 @@ The following files are inside the **Data** folder:
 
 * **dat.csv**: Corpus data from the BNC. Minus the column-header row, the file contains 1,636 lines. This is divided into 818 lines of *let* and 818 lines of *permit*.
 * **dca_results.csv**: A distinctive collexeme analysis report of the corpus data.
-* **text_identifier.csv**: 
+* **text_identifier.csv**: Source text IDs from the BNC (see this [website](http://www.natcorp.ox.ac.uk/docs/URG/bibliog.html) for more detail).
 * **verb_list.txt**: 
